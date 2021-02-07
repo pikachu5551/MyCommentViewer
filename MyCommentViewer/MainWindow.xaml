@@ -8,15 +8,16 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <TextBox x:Name="OpenrecUrl" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="612"/>
-        <Button x:Name="ConnectOpenrec" Content="接続" HorizontalAlignment="Left" Margin="627,10,0,0" VerticalAlignment="Top" Width="75" Height="23"/>
+        <Button x:Name="ConnectOpenrec" Content="接続" HorizontalAlignment="Left" Margin="627,10,0,0" VerticalAlignment="Top" Width="75" Height="23" Click="ConnectOpenrec_Click"/>
         <Button x:Name="DisconnectOpenrec" Content="切断" HorizontalAlignment="Left" Margin="707,10,0,0" VerticalAlignment="Top" Width="75" Height="23"/>
-        <ListView HorizontalAlignment="Left" Height="371" Margin="10,38,0,0" VerticalAlignment="Top" Width="772">
+        <ListView x:Name="CommentView" HorizontalAlignment="Left" Height="258" Margin="10,151,0,0" VerticalAlignment="Top" Width="772">
             <ListView.View>
                 <GridView>
                     <GridViewColumn/>
                 </GridView>
             </ListView.View>
         </ListView>
+        <Label x:Name="Debug" Content="" HorizontalAlignment="Left" Margin="10,54,0,0" VerticalAlignment="Top" Width="224"/>
 
     </Grid>
 </Window>

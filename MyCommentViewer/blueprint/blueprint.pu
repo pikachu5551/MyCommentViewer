@@ -1,0 +1,6 @@
+@startuml ConnectOpenrec
+ConnectOpenrecMethod -> GetHtml : 配信URL
+GetHtml -> ConnectOpenrecMethod : 配信ページのHTML
+ConnectOpenrecMethod -> OpenrecUserIdPurser : 配信ページのHTML
+OpenrecUserIdPurser -> ConnectOpenrecMethod : OpenrecのユーザID
+@enduml
