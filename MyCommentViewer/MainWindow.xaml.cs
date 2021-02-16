@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.WebSockets;
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace MyCommentViewer
 {
@@ -31,19 +20,37 @@ namespace MyCommentViewer
         {
             ConnectOpenrecMethod(OpenrecUrl.Text);
         }
-
-        private void ConnectOpenrecMethod(string url)
+        /// <summary>
+        /// Viewの接続ボタンを押した時の動作
+        /// </summary>
+        /// <param name="url">配信ページのURL</param>
+        private async  void ConnectOpenrecMethod(string url)
         {
             string html = GetHtml(url);
             string userId = OpenrecUserIdPurser(html);
             string movieId = OpenrecMovieIdPurser(userId);
-            string websocketUrl = $"wss://chat.openrec.tv/socket.io/?movieId={movieId}&EIO=3&transport=websocket";
+            string webSocketUrl = $"wss://chat.openrec.tv/socket.io/?movieId={movieId}&EIO=3&transport=websocket";
+
+
+            var ws = new ClientWebSocket();
+            // wssのアドレスがString型なのでUriにするのに必要？
+            var uri = new Uri(webSocketUrl);
+            var cts = new CancellationTokenSource();
+            await ws.ConnectAsync(uri, cts.Token);
             
-            //Console.WriteLine(movieId);
+
+
+
+
+
+            Console.WriteLine("配信ページのmovieId：" + movieId);
+            Console.WriteLine("配信のWebSocketアドレス：" + webSocketUrl);
+            // WebSocketの状態の確認
+            Console.WriteLine("WebSocket接続状態：" + ws.State);
         }
 
         /// <summary>
-        /// 配信者のユーザーIDからapiのURLを作成し、配信ページのmovie_idをパースする事で取得
+        /// 配信者のユーザーIDからapiのURLを作成し、配信ページのmovie_idをパースする事で取得する
         /// </summary>
         /// <param name="userId">配信者のユーザーID</param>
         /// <returns>配信ページのmovie_id</returns>
@@ -58,7 +65,7 @@ namespace MyCommentViewer
         }
 
         /// <summary>
-        /// 配信ページのHTMLをパースし、配信者のユーザーIDを取得
+        /// 配信ページのHTMLをパースし、配信者のユーザーIDを取得する
         /// </summary>
         /// <param name="html">配信ページのHTML</param>
         /// <returns>配信者のユーザーID</returns>
@@ -71,7 +78,7 @@ namespace MyCommentViewer
         }
 
         /// <summary>
-        /// 引数にとったURLのHTMLを文字列で取得
+        /// 引数にとったURLのHTMLを文字列で取得する
         /// </summary>
         /// <param name="url">配信ページのURL</param>
         /// <returns>配信ページのHTML</returns>

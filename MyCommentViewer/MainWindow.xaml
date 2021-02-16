@@ -17,7 +17,6 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Label x:Name="Debug" Content="" HorizontalAlignment="Left" Margin="10,54,0,0" VerticalAlignment="Top" Width="224"/>
 
     </Grid>
 </Window>
