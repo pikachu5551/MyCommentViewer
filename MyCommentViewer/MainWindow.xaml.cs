@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace MyCommentViewer
@@ -11,33 +12,54 @@ namespace MyCommentViewer
     /// </summary>
     public partial class MainWindow : Window
     {
+        string _url;
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void ConnectOpenrec_Click(object sender, RoutedEventArgs e)
-        {
-            ConnectOpenrecMethod(OpenrecUrl.Text);
-        }
         /// <summary>
         /// Viewの接続ボタンを押した時の動作
         /// </summary>
-        /// <param name="url">配信ページのURL</param>
-        private async  void ConnectOpenrecMethod(string url)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void ConnectOpenrec_Click(object sender, RoutedEventArgs e)
         {
-            string html = GetHtml(url);
+            await Task.Run(() => ConnectOpenrecMethod());
+        }
+        /// <summary>
+        /// Openrecのコメントサーバーへ接続し、表示する。
+        /// </summary>
+        private async  void ConnectOpenrecMethod()
+        {
+            // 非同期処理中はメインスレッドであるUIのOpenrecUrl.Textを取得出来ないのでこの関数が必要になる
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                this._url = this.OpenrecUrl.Text;
+            }));
+            string html = GetHtml(this._url);
             string userId = OpenrecUserIdPurser(html);
             string movieId = OpenrecMovieIdPurser(userId);
             string webSocketUrl = $"wss://chat.openrec.tv/socket.io/?movieId={movieId}&EIO=3&transport=websocket";
-
-
-            var ws = new ClientWebSocket();
             // wssのアドレスがString型なのでUriにするのに必要？
             var uri = new Uri(webSocketUrl);
-            var cts = new CancellationTokenSource();
-            await ws.ConnectAsync(uri, cts.Token);
+
             
+            
+            var ws = new ClientWebSocket();
+            // ConnectAsync()用のキャンセルトークンのインスタンスを生成(第二引数をCancellationToken.Noneとすると不要だったのでコメント化している)
+            // var cts = new CancellationTokenSource();
+
+            // WebSocketでコメントサーバーと接続
+            await ws.ConnectAsync(uri, CancellationToken.None);
+
+            var buffer = new byte[1024];
+            // 情報保存用の配列を準備
+            var segment = new ArraySegment<byte>(buffer);
+
+            // サーバーからのレスポンスを取得
+            var json = await ws.ReceiveAsync(segment, CancellationToken.None);
 
 
 
@@ -47,6 +69,7 @@ namespace MyCommentViewer
             Console.WriteLine("配信のWebSocketアドレス：" + webSocketUrl);
             // WebSocketの状態の確認
             Console.WriteLine("WebSocket接続状態：" + ws.State);
+            Console.WriteLine(json);
         }
 
         /// <summary>
