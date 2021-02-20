@@ -1,0 +1,24 @@
+@startuml ニコニコのWebSocket接続まで
+ConnectCommentServer -> RestClient : GetWebSocketUrlAsync(string userId) : Task<string>
+
+activate RestClient
+RestClient -> ELMHttpClientUtil : GetAsync(string liveUrl) : 
+
+activate ELMHttpClientUtil
+RestClient <-- ELMHttpClientUtil : Htmlのソースコードが返ってくる
+deactivate ELMHttpClientUtil
+RestClient -> HtmlParser : ParseAttribute(string atribute)
+
+activate HtmlParser
+RestClient <-- HtmlParser : json形式のdata-props中身
+deactivate HtmlParser
+
+RestClient -> NicoNicoConverter : ConvertToDataPropsJsonModel(propsの中身)
+
+activate NicoNicoConverter
+RestClient <-- NicoNicoConverter : DataPropsJsonModel()
+deactivate NicoNicoConverter
+
+ConnectCommentServer <-- RestClient : DataProps.WebSocketUrl
+
+@enduml

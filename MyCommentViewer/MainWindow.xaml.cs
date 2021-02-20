@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -31,7 +32,7 @@ namespace MyCommentViewer
         /// <summary>
         /// Openrecのコメントサーバーへ接続し、表示する。
         /// </summary>
-        private async  void ConnectOpenrecMethod()
+        private async void ConnectOpenrecMethod()
         {
             // 非同期処理中はメインスレッドであるUIのOpenrecUrl.Textを取得出来ないのでこの関数が必要になる
             this.Dispatcher.Invoke((Action)(() =>
@@ -45,8 +46,8 @@ namespace MyCommentViewer
             // wssのアドレスがString型なのでUriにするのに必要？
             var uri = new Uri(webSocketUrl);
 
-            
-            
+
+
             var ws = new ClientWebSocket();
             // ConnectAsync()用のキャンセルトークンのインスタンスを生成(第二引数をCancellationToken.Noneとすると不要だったのでコメント化している)
             // var cts = new CancellationTokenSource();
@@ -55,21 +56,85 @@ namespace MyCommentViewer
             await ws.ConnectAsync(uri, CancellationToken.None);
 
             var buffer = new byte[1024];
-            // 情報保存用の配列を準備
-            var segment = new ArraySegment<byte>(buffer);
+            while (true)
+            {
+                var segment = new ArraySegment<byte>(buffer);
+                var result = await ws.ReceiveAsync(segment, CancellationToken.None);
+                int count = result.Count;
+                var message = Encoding.UTF8.GetString(buffer, 0, count);
+                Console.WriteLine("> " + message);
+            }
 
-            // サーバーからのレスポンスを取得
-            var json = await ws.ReceiveAsync(segment, CancellationToken.None);
 
+/*
+            while (true)
+            {
+                //所得情報確保用の配列を準備
+                var segment = new ArraySegment<byte>(buffer);
 
+                //サーバからのレスポンス情報を取得
+                var result = await ws.ReceiveAsync(segment, CancellationToken.None);
 
+                //エンドポイントCloseの場合、処理を中断
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "OK",
+                      CancellationToken.None);
+                    return;
+                }
 
+                //バイナリの場合は、当処理では扱えないため、処理を中断
+                if (result.MessageType == WebSocketMessageType.Binary)
+                {
+                    await ws.CloseAsync(WebSocketCloseStatus.InvalidMessageType,
+                      "I don't do binary", CancellationToken.None);
+                    return;
+                }
+
+                *//*//メッセージの最後まで取得
+                int count = result.Count;
+
+                while (!result.EndOfMessage)
+                {
+                    if (count >= buffer.Length)
+                    {
+                        await ws.CloseOutputAsync(WebSocketCloseStatus.InvalidPayloadData,
+                          "That's too long", CancellationToken.None);
+                        return;
+                    }
+                    segment = new ArraySegment<byte>(buffer, count, buffer.Length - count);
+                    result = await ws.ReceiveAsync(segment, CancellationToken.None);
+
+                    count += result.Count;
+                }*//*
+
+                //メッセージを取得
+                var message = Encoding.UTF8.GetString(buffer, 0, count);
+                Console.WriteLine("> " + message);
+            }
+*/
 
             Console.WriteLine("配信ページのmovieId：" + movieId);
             Console.WriteLine("配信のWebSocketアドレス：" + webSocketUrl);
             // WebSocketの状態の確認
             Console.WriteLine("WebSocket接続状態：" + ws.State);
-            Console.WriteLine(json);
+
+
+
+
+
+            /*while (true) 
+            {
+                // 情報保存用の配列を準備
+                var segment = new ArraySegment<byte>(buffer);
+                // サーバーからのレスポンスを取得
+                var json = await ws.ReceiveAsync(segment, CancellationToken.None);   
+                Console.WriteLine("配信ページのmovieId：" + movieId);
+                Console.WriteLine("配信のWebSocketアドレス：" + webSocketUrl);
+                // WebSocketの状態の確認
+                Console.WriteLine("WebSocket接続状態：" + ws.State);
+                Console.WriteLine(json);
+            }*/
         }
 
         /// <summary>
