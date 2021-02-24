@@ -56,7 +56,8 @@ namespace MyCommentViewer
             await ws.ConnectAsync(uri, CancellationToken.None);
 
             var buffer = new byte[1024];
-            while (true)
+
+            while (ws.State.ToString() == "Open")
             {
                 var segment = new ArraySegment<byte>(buffer);
                 var result = await ws.ReceiveAsync(segment, CancellationToken.None);
