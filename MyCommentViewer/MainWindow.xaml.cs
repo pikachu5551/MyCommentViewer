@@ -58,10 +58,11 @@ namespace MyCommentViewer
             await ws.ConnectAsync(uri, CancellationToken.None);
 
             var buffer = new byte[1024];
+            var segment = new ArraySegment<byte>(buffer);
 
             while (ws.State.ToString() == "Open")
             {
-                var segment = new ArraySegment<byte>(buffer);
+                
                 var result = await ws.ReceiveAsync(segment, CancellationToken.None);
                 int count = result.Count;
 
@@ -75,55 +76,6 @@ namespace MyCommentViewer
                 }));
 
             }
-
-
-/*
-            while (true)
-            {
-                //所得情報確保用の配列を準備
-                var segment = new ArraySegment<byte>(buffer);
-
-                //サーバからのレスポンス情報を取得
-                var result = await ws.ReceiveAsync(segment, CancellationToken.None);
-
-                //エンドポイントCloseの場合、処理を中断
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "OK",
-                      CancellationToken.None);
-                    return;
-                }
-
-                //バイナリの場合は、当処理では扱えないため、処理を中断
-                if (result.MessageType == WebSocketMessageType.Binary)
-                {
-                    await ws.CloseAsync(WebSocketCloseStatus.InvalidMessageType,
-                      "I don't do binary", CancellationToken.None);
-                    return;
-                }
-
-                *//*//メッセージの最後まで取得
-                int count = result.Count;
-
-                while (!result.EndOfMessage)
-                {
-                    if (count >= buffer.Length)
-                    {
-                        await ws.CloseOutputAsync(WebSocketCloseStatus.InvalidPayloadData,
-                          "That's too long", CancellationToken.None);
-                        return;
-                    }
-                    segment = new ArraySegment<byte>(buffer, count, buffer.Length - count);
-                    result = await ws.ReceiveAsync(segment, CancellationToken.None);
-
-                    count += result.Count;
-                }*//*
-
-                //メッセージを取得
-                var message = Encoding.UTF8.GetString(buffer, 0, count);
-                Console.WriteLine("> " + message);
-            }
-*/
 
             Console.WriteLine("配信ページのmovieId：" + movieId);
             Console.WriteLine("配信のWebSocketアドレス：" + webSocketUrl);

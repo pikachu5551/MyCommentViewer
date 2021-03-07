@@ -13,7 +13,9 @@
         <ListView x:Name="CommentView" HorizontalAlignment="Left" Height="258" Margin="10,151,0,0" VerticalAlignment="Top" Width="772">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn/>
+                    <GridViewColumn Header="コメント番号"/>
+                    <GridViewColumn Header="ユーザーID"/>
+                    <GridViewColumn Header="コメント"/>
                 </GridView>
             </ListView.View>
         </ListView>
