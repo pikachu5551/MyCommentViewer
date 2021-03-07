@@ -29,6 +29,7 @@ namespace MyCommentViewer
         {
             await Task.Run(() => ConnectOpenrecMethod());
         }
+
         /// <summary>
         /// Openrecのコメントサーバーへ接続し、表示する。
         /// </summary>
@@ -39,6 +40,7 @@ namespace MyCommentViewer
             {
                 this._url = this.OpenrecUrl.Text;
             }));
+
             string html = GetHtml(this._url);
             string userId = OpenrecUserIdPurser(html);
             string movieId = OpenrecMovieIdPurser(userId);
@@ -62,8 +64,16 @@ namespace MyCommentViewer
                 var segment = new ArraySegment<byte>(buffer);
                 var result = await ws.ReceiveAsync(segment, CancellationToken.None);
                 int count = result.Count;
-                var message = Encoding.UTF8.GetString(buffer, 0, count);
+
+                // 受信した文字列データが、用意しているバッファよりも少ない場合、バッファの残りの部分が0になるらしいのでTrimEnd('\0')している
+                var message = Encoding.UTF8.GetString(buffer, 0, count).TrimEnd('\0');
                 Console.WriteLine("> " + message);
+
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    CommentView.Items.Add(message);
+                }));
+
             }
 
 
@@ -119,23 +129,6 @@ namespace MyCommentViewer
             Console.WriteLine("配信のWebSocketアドレス：" + webSocketUrl);
             // WebSocketの状態の確認
             Console.WriteLine("WebSocket接続状態：" + ws.State);
-
-
-
-
-
-            /*while (true) 
-            {
-                // 情報保存用の配列を準備
-                var segment = new ArraySegment<byte>(buffer);
-                // サーバーからのレスポンスを取得
-                var json = await ws.ReceiveAsync(segment, CancellationToken.None);   
-                Console.WriteLine("配信ページのmovieId：" + movieId);
-                Console.WriteLine("配信のWebSocketアドレス：" + webSocketUrl);
-                // WebSocketの状態の確認
-                Console.WriteLine("WebSocket接続状態：" + ws.State);
-                Console.WriteLine(json);
-            }*/
         }
 
         /// <summary>
